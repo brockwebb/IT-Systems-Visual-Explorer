@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.link {
+  fill: none;
+  stroke: #666;
+  stroke-opacity: .6;
+  stroke-width: 1.5px;
+}
+
+
+
+#bidirectional {
+  fill: none;
+}
+
+#ESB {
+  fill: red;
+  
+}
+
+.link.bidirectional {
+  stroke: green;
+}
+
+.link.ESB {
+  stroke: red;
+}
+
+
+.link.one-directional {
+  stroke-dasharray: 0,2 1;
+}
+
+
+.node text {
+  font: 10px sans-serif;
+  pointer-events: none;
+  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+}
+
+circle {
+  fill: #fff;
+  stroke: #333;
+  stroke-width: 1.5px;
+}
+
+text {
+  font: 10px sans-serif;
+  pointer-events: none;
+  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+}        
+
+.legend {                                                   
+        font-size: 12px;                                          
+      }                                                           
+      rect {                                                      
+        stroke-width: 2;                                          
+      }                         
+
+</style>
+<body>
+
+<h2><DIV ALIGN=CENTER>Census Systems Interface Explorer</DIV></h2>
+
+<p><DIV ALIGN=CENTER><b> Instructions: "double-click" to highlight neighbor nodes, "double-click" again to restore. Click and drag nodes to other locations around the screen.</DIV></b></p>
+
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+
+
+// This is an adaptation of Mike Bostock's Force Directed Graph http://bl.ocks.org/mbostock/2706022
+var links = [
+
+//Data Collection
+////Control
+{"source":0,"target":1,"type": "bidirectional" ,"datatype": "na"},
+{"source":0,"target":2,"type": "ESB" ,"datatype": "na"},
+{"source":0,"target":7,"type": "bidirectional" ,"datatype": "na"},
+{"source":0,"target":1,"type": "ESB" ,"datatype": "na"},
+
+//GEO
+{"source":1,"target":2,"type": "bidirectional" ,"datatype": "na"},
+{"source":8,"target":1,"type": "one-directional" ,"datatype": "na"},
+{"source":9,"target":1,"type": "one-directional" ,"datatype": "na"},
+{"source":10,"target":1,"type": "one-directional" ,"datatype": "na"},
+
+//Data Collection
+////Internet
+{"source":3,"target":2,"type": "one-directional" ,"datatype": "na"},
+{"source":2,"target":0,"type": "ESB" ,"datatype": "na"},
+{"source":2,"target":7,"type": "ESB" ,"datatype": "na"},
+{"source":2,"target":11,"type": "bidirectional" ,"datatype": "na"},
+
+////Mobile
+{"source":12,"target":4,"type": "bidirectional" ,"datatype": "na"},
+{"source":4,"target":5,"type": "bidirectional" ,"datatype": "na"},
+{"source":5,"target":0,"type": "ESB" ,"datatype": "na"},
+
+////Paradata
+{"source":7,"target":0,"type": "bidirectional" ,"datatype": "na"},
+
+//Survey
+{"source":6,"target":2,"type": "one-directional" ,"datatype": "na"},
+
+//Data Dissemination
+{"source":16,"target":14,"type": "bi-directional" ,"datatype": "na"},
+{"source":14,"target":13,"type": "bi-directional" ,"datatype": "na"},
+{"source":13,"target":0,"type": "ESB" ,"datatype": "na"},
+
+//Support
+{"source":15,"target":0,"type": "ESB" ,"datatype": "na"},
+{"source":16,"target":15,"type": "bi-directional" ,"datatype": "na"}
+
+///////  LAST LINE -- NOTHING FOLLOWS  ////// 
+];
+
+
+var nodes = [
+
+{"name": "Simple Control" ,"group": "Control"},
+{"name": "Analytic Decision" ,"group": "Control"},
+{"name": "Web Survey" ,"group": "Internet"},
+{"name": "Public" ,"group": "External"},
+{"name": "Mobile App" ,"group": "Mobile"},
+{"name": "Mobile Backend" ,"group": "Mobile"},
+{"name": "Survey Builder" ,"group": "Survey Builder"},
+{"name": "Paradata Processing" ,"group": "Paradata"},
+{"name": "Map Images" ,"group": "Geo"},
+{"name": "Address List" ,"group": "Geo"},
+{"name": "GPS-Database" ,"group": "Geo"},
+{"name": "Geo-Server" ,"group": "Geo"},
+{"name": "Mobile Worker" ,"group": "External"},
+{"name": "Data Processing" ,"group": "Data Analysis"},
+{"name": "Data Display" ,"group": "Data Visualization"},
+{"name": "HR System" ,"group": "HR"},
+{"name": "Internal User" ,"group": "Internal"}
+
+];
+
+
+
+var width = 800,
+    height = 600;
+
+var color = d3.scale.category20();
+
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+
+var force = d3.layout.force()
+    .nodes(nodes)
+    .links(links)
+    .size([width, height])
+    .charge(-600)
+    .linkDistance(150)
+    .start();
+    
+// build the arrow.
+svg.append("defs").selectAll("marker")
+    .data(["bidirectional","ESB","one-directional"])      
+  .enter().append("marker")    
+    .attr("id", String)
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 30)
+    .attr("refY", 0)
+    .attr("markerWidth", 6)
+    .attr("markerHeight", 6)
+    .attr("orient", "auto")
+  .append("path")
+    .attr("d", "M0,-5L10,0L0,5");
+
+
+
+
+//var link = svg.selectAll(".link")
+var link = svg.append("g").selectAll(".link")
+    .data(links)
+    .enter().append("line")
+    .attr("class", "link")
+    .attr("class", function(d) { return "link " + d.type; })    
+    .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
+
+
+    
+// You define here your nodes and the color will be d.group
+var node = svg.selectAll(".node")
+    .data(nodes)
+    .enter().append("g")
+    .attr("class", "node")
+    .on('click',click)
+    .on('dblclick', connectedNodes)
+    .call(force.drag);
+
+//For each node, we'll count the number of links and set 
+//the size based on that, using cube root to keep things "smaller" relative
+//to each other. Then, set the color based on which group its in
+node.append("circle")
+      .attr("r",function(d) {return Math.cbrt(d.weight) * 6;})
+      .style("fill", function (d) {return color(d.group);})
+
+node.append("text")
+      .attr("dx", 10)
+      .attr("dy", ".35em")
+      .text(function(d) { return d.name });
+    
+//Display node name when mouse on a node
+node.append("title")
+    .text(function(d) { return d.name; });
+    
+force.on("tick", function (e) {
+    link.attr("x1", function (d) {return d.source.x;})
+    	.attr("y1", function (d) {return d.source.y;})
+    	.attr("x2", function (d) {return d.target.x;})
+    	.attr("y2", function (d) {return d.target.y;});
+
+    node.attr("transform", function(d) { 
+	return "translate(" + d.x + "," + d.y + ")"; });
+   
+    node.each(collide(0.5)); //collision detection
+
+    
+});
+
+
+
+// Single Mouse Click Action
+// action to take on mouse click
+function click() {
+    d3.select(this).classed("fixed", d3.fixed = true);
+}
+
+//Dragging nodes
+var drag = force.drag()
+    .on("dragstart", dragstart);var drag = force.drag()
+    .on("dragstart", dragstart);
+
+function dragstart(d) {
+  d3.select(this).classed("fixed", d.fixed = true);
+}
+
+
+//Collision detection
+var padding = 2, // separation between circles
+    radius=10;
+function collide(alpha) {
+  var quadtree = d3.geom.quadtree(nodes);
+  return function(d) {
+    var rb = 2*radius + padding,
+        nx1 = d.x - rb,
+        nx2 = d.x + rb,
+        ny1 = d.y - rb,
+        ny2 = d.y + rb;
+    quadtree.visit(function(quad, x1, y1, x2, y2) {
+      if (quad.point && (quad.point !== d)) {
+        var x = d.x - quad.point.x,
+            y = d.y - quad.point.y,
+            l = Math.sqrt(x * x + y * y);
+          if (l < rb) {
+          l = (l - rb) / l * alpha;
+          d.x -= x *= l;
+          d.y -= y *= l;
+          quad.point.x += x;
+          quad.point.y += y;
+        }
+      }
+      return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+    });
+  };
+}
+
+
+//Toggle stores whether the highlighting is on
+var toggle = 0;
+//Create an array logging what is connected to what
+var linkedByIndex = {};
+for (i = 0; i < links.length; i++) {
+    linkedByIndex[i + "," + i] = 1;
+};
+links.forEach(function (d) {
+    linkedByIndex[d.source.index + "," + d.target.index] = 1;
+});
+//This function looks up whether a pair are neighbours
+function neighboring(a, b) {
+    return linkedByIndex[a.index + "," + b.index];
+}
+function connectedNodes() {
+    if (toggle == 0) {
+        //Reduce the opacity of all but the neighbouring nodes
+        d = d3.select(this).node().__data__;
+        node.style("opacity", function (o) {
+            return neighboring(d, o) | neighboring(o, d) ? 1 : 0.1;
+        });
+        link.style("opacity", function (o) {
+            return d.index==o.source.index | d.index==o.target.index ? 1 : 0.1;
+        });
+        //Reduce the op
+        toggle = 1;
+    } else {
+        //Put them back to opacity=1
+        node.style("opacity", 1);
+        link.style("opacity", 1);
+        toggle = 0;
+    }
+}
+
+//Legend
+var legend = svg.selectAll(".legend")
+    .data(color.domain())
+    .enter().append("g")
+    .attr("class", "legend")
+    .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+legend.append("rect")
+    .attr("x", width - 18)
+    .attr("width", 18)
+    .attr("height", 18)
+    .style("fill", color);
+
+legend.append("text")
+    .attr("x", width - 24)
+    .attr("y", 9)
+    .attr("dy", ".35em")
+    .style("text-anchor", "end")
+    .text(function(d) { return d; });
+ 
+body = d3.select('body')
+svg = body.append('svg')
+                    .attr('height', 600)
+                    .attr('width', 200);
+    var g = svg.append('g').attr("transform" ,"scale(0)");
+    rect = g.append('rect')
+                    .attr('width', 150)
+                    .attr('height', 100)
+                    .attr('x', 40)
+                    .attr('y', 100)
+                    .style('fill', 'none')
+                    .attr('stroke', 'black')
+    text = g.append('foreignObject')
+                    .attr('x', 50)
+                    .attr('y', 130)
+                    .attr('width', 150)
+                    .attr('height', 100)
+                    .append("xhtml:body")
+		    .html('<div style="width: 150px;">Green Lines: bi-directional; Red Lines: ESB; Dashed Lines: one-direction communication</div>')
+    
+		g.transition().duration(500).attr("transform" ,"scale(1)");
+
+
+////////// END OF SCRIPT //////////
+
+</script>
+
+<h3>Legend:</h3>
+<ul>
+<li> Green line: bi-directional traffic </li>
+<li> Red Line/Red Arrow: ESB traffic, directional </li>
+<li> Dashed line / Black Arrow: point to point, one direction </li>
+</ul>
+
+<h3>Motivations for this tool</h3>
+This is designed to quickly look at all systems together and discern the various data flows between systems. The goal was something visual, easy to use, and would quickly identify the various links that Census systems share. When conducting performance analysis, understanding the consumer/customer relationship between systems is important in a holistic understanding of how systems interact and interoperate.
+
+<h3>Potential Improvements</h3>
+<ul>
+<li> Adding data type labels (e.g. (P) patadata; (R) response data; (S) sample data; etc)</li>
+<li> Identify the type of interface better: ESB, DBLink, SFTP, etc.  
+<li> Adding filters for system nodes and data types, by group (area), etc.</li>
+<li> Setting up graph to group like colors together</li>
+<li> Adding a toggle to "turn on" sub-group colors, cluster those together </li>
+<li> Retrieve data dynamically from a JSON or XML document, allowing dynamic creation and push to the display, or a custom select of a file to display </li>
+<li> Data path analysis: help trace data lineage from a source system, across system boundaries and interfaces, to a destination of interest </li>
+<li> Open to suggestions</li>
+</ul>
+
+<h3>Recent Complietions (v0.51b)</h3>
+<ul>
+<li>Restructured input into link[] and node[] inputs to get group colors working
+<li>Added a legend.
+<li>Created an Excel File to create and maintain groups and link relationships, cut-n-paste the resulting code into the link[] and node[] variables.
+</ul>
+
+<h3>References</h3>
+This is an adaptation of:  
+<ul>
+<li> Open Source D3 javascript library </li>
+<li> <a href="http://bl.ocks.org/mbostock/2706022">Mike Bostock's Force Directed Graph</a>  </li>
+<li> <a href="http://www.coppelia.io/2014/07/an-a-to-z-of-extra-features-for-the-d3-force-layout/">Simion Raper's adaptations for node neighbor highlighting</a></li>
+<li> Rom2BE's grouping example http://jsfiddle.net/Rom2BE/H2PkT/</li>
+</ul>
+
+<h3>Contact</h3>
+<p>Brock Webb · brock.webb@census.gov · x34721</p>
